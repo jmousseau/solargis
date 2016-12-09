@@ -8,3 +8,4 @@ Description: Request SolarGIS data from a Hadoop File System. Populate data if
 Imports:
     data.table
 License: CC BY-NC-SA 4.0
+RoxygenNote: 5.0.1
