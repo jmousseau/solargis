@@ -6,6 +6,7 @@ Authors@R: as.person("Jack Mousseau <mousseau@case.edu> [cre, aut]")
 Description: Request SolarGIS data from a Hadoop File System. Populate data if
     not present for a given location.
 Imports:
-    data.table
+    data.table,
+    digest
 License: CC BY-NC-SA 4.0
 RoxygenNote: 5.0.1
