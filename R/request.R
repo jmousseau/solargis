@@ -48,6 +48,7 @@ request <- function(solargis_dir, lat, lon, year, author, min_dist = 10000) {
     # `min_dist` of the current requested location.
     if (file.exists(meta_file)) {
         meta <- data.table::fread(meta_file)
+        meta <- meta[which(meta$year == year), ]
 
         # Convert the two arrays of latitude and longitude to coordinate pairs.
         coords <- mapply(c, meta$lat, meta$lon, SIMPLIFY = FALSE)
@@ -55,6 +56,10 @@ request <- function(solargis_dir, lat, lon, year, author, min_dist = 10000) {
         dist_to_prev_requests <- unlist(lapply(coords, function(coord) {
             return(distance_between(lat, lon, coord[1], coord[2]))
         }))
+
+        # If dist_to_prev_requests is empty, this will cause the comparison
+        # below to fail and thus request data from SolarGIS.
+        dist_to_prev_requests <- c(dist_to_prev_requests, min_dist)
 
         if (min(dist_to_prev_requests) < min_dist) {
             message(paste("Found existing location within", min_dist, "meters."))
@@ -65,24 +70,26 @@ request <- function(solargis_dir, lat, lon, year, author, min_dist = 10000) {
 
             return(path)
         }
-    } else {
-        message(paste("No existing location within", min_dist, "meters."))
-        message("Fetching new data set from SolarGIS...")
-
-        # Add the request to "meta.csv" because we are requesting a new dataset.
-        # Warnings are suppressed for a non-existing "meta.csv".
-        suppressWarnings(
-            write.csv(data.frame(
-                lat = lat,
-                lon = lon,
-                year = year,
-                file_hash = digest::sha1(paste(lat, lon, year, sep = "-"))
-            ), file = meta_file, sep = ",", dec = ".", append = TRUE,
-            row.names = FALSE, col.names = !file.exists(meta_file))
-        )
-
-        # TODO: Request data, write file & return path.
-
-        return(NULL)
     }
+
+    # This point is only reached if no meta file exists or no existing data file
+    # meets the request parameters (year & min distance).
+    message(paste("No existing location within", min_dist, "meters."))
+    message("Fetching new data set from SolarGIS...")
+
+    # Add the request to "meta.csv" because we are requesting a new dataset.
+    # Warnings are suppressed for a non-existing "meta.csv".
+    suppressWarnings(
+        write.csv(data.frame(
+            lat = lat,
+            lon = lon,
+            year = year,
+            file_hash = digest::sha1(paste(lat, lon, year, sep = "-"))
+        ), file = meta_file, sep = ",", dec = ".", append = TRUE,
+        row.names = FALSE, col.names = !file.exists(meta_file))
+    )
+
+    # TODO: Request data, write file & return path.
+
+    return(NULL)
 }
