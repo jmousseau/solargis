@@ -9,18 +9,20 @@
 #'
 #' @param lon The location's longitude.
 #'
-#' @param year The year of data to be requested.
+#' @param start_date The start date for the data to be requested.
+#' 
+#' @param end_date The end date for the data to be reqeusted.
 #'
 #' @author author The author of the request. May be an individual's name or the
 #' project name requesting data.
 #'
 #' @param min_dist The minimum distance in meters from (lat, lon) that is
-#' acceptable for use. Defaults to 10000 meters which is about 6.2 miles.
+#' acceptable for use. Defaults to 1000 meters which is about 0.62 miles.
 #'
 #' @return A complete file path for the SolarGIS data requested.
 #'
 #' @export
-request <- function(solargis_dir, lat, lon, year, author, min_dist = 10000) {
+request <- function(solargis_dir, lat, lon, start_date, end_date, author, min_dist = 1000) {
     if (!dir.exists(solargis_dir)) {
         stop(paste("The solargis directory", solargis_dir, "does not exist."))
     }
@@ -37,7 +39,8 @@ request <- function(solargis_dir, lat, lon, year, author, min_dist = 10000) {
         write.table(data.frame(
             lat = lat,
             lon = lon,
-            year = year,
+            start_date = start_date,
+            end_date = end_date,
             author = author,
             min_dist = min_dist
         ), file = requests_file, sep = ",", dec = ".", append = TRUE,
@@ -63,7 +66,12 @@ request <- function(solargis_dir, lat, lon, year, author, min_dist = 10000) {
 
         if (min(dist_to_prev_requests) < min_dist) {
             message(paste("Found existing location within", min_dist, "meters."))
-
+            
+            # TODO: Check the range of dates here. If they are contained, return
+            # path to file, otherwise update date range for meta and change
+            # lat/lon to be lat/lon in meta table. Update date range in meta
+            # table. Then create and submit new request(s).
+            
             closest <- meta[which.min(dist_to_prev_requests), ]
             file <- paste0(meta$file_hash, ".csv")
             path <- paste(solargis_dir, "data", meta$year, file, sep = "/")
@@ -83,8 +91,10 @@ request <- function(solargis_dir, lat, lon, year, author, min_dist = 10000) {
         write.csv(data.frame(
             lat = lat,
             lon = lon,
-            year = year,
-            file_hash = digest::sha1(paste(lat, lon, year, sep = "-"))
+            start_date = start_date,
+            end_date = end_date,
+            author = author,
+            file_hash = digest::sha1(paste0(lat, lon, start_date, end_date))
         ), file = meta_file, sep = ",", dec = ".", append = TRUE,
         row.names = FALSE, col.names = !file.exists(meta_file))
     )

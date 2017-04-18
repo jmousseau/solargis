@@ -4,7 +4,7 @@
 \alias{request}
 \title{Request SolarGIS data.}
 \usage{
-request(solargis_dir, lat, lon, year, author, min_dist = 10000)
+request(solargis_dir, lat, lon, start_date, end_date, author, min_dist = 1000)
 }
 \arguments{
 \item{solargis_dir}{The root directory where solar-gis data is stored.}
@@ -13,10 +13,12 @@ request(solargis_dir, lat, lon, year, author, min_dist = 10000)
 
 \item{lon}{The location's longitude.}
 
-\item{year}{The year of data to be requested.}
+\item{start_date}{The start date for the data to be requested.}
+
+\item{end_date}{The end date for the data to be reqeusted.}
 
 \item{min_dist}{The minimum distance in meters from (lat, lon) that is
-acceptable for use. Defaults to 10000 meters which is about 6.2 miles.}
+acceptable for use. Defaults to 1000 meters which is about 0.62 miles.}
 }
 \value{
 A complete file path for the SolarGIS data requested.
