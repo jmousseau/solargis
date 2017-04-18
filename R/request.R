@@ -103,3 +103,63 @@ request <- function(solargis_dir, lat, lon, start_date, end_date, author, min_di
 
     return(NULL)
 }
+
+
+#' Request data from SolarGIS servers.
+#'
+#' Submit a single request for a single location to SolarGIS's REST API.
+#' IMPORTANT: NO CHECKS ARE MADE WHEN THIS FUNCTION IS CALLED AGAINST PREVIOUS
+#' REQUESTS SO THE TIME PERIOD WILL COUNT AGAINST OUR DATA UNITS.
+#'
+#' @param lat The location's latitude.
+#'
+#' @param lon The location's longitude.
+#'
+#' @param start_date The start date for the data to be requested.
+#' 
+#' @param end_date The end date for the data to be reqeusted.
+#'
+#' @param api_key The API key for solar gis.
+#' 
+#' @return A complete file path for the SolarGIS data requested.
+request_remote <- function(lat, lon, start_date, end_date, api_key) {
+    base_url <- "https://solargis.info/ws/rest/datadelivery"
+    url <- paste0(base_url, "/request?key=", api_key)
+    
+    site_hash <- digest::sha1(paste0(lat, lon, start_date, end_date))
+    site_id <- paste0("site-", site_hash)
+
+    body <- "<ws:dataDeliveryRequest dateFrom='_!DFR!_' dateTo='_!DTO!_'
+                xmlns='http://geomodel.eu/schema/data/request'
+                xmlns:ws='http://geomodel.eu/schema/ws/data'>
+                <site id='_!SID!_' lat='_!LAT!_' lng='_!LON!_'/>
+                <processing key='GHI DIF DNI' summarization='MIN_15'/>
+            </ws:dataDeliveryRequest>"
+    
+    body <- gsub("_!DFR!_", start_date, body, fixed = TRUE)
+    body <- gsub("_!DTO!_", end_date, body, fixed = TRUE)
+    body <- gsub("_!LAT!_", lat, body, fixed = TRUE)
+    body <- gsub("_!LON!_", lon, body, fixed = TRUE)
+    body <- gsub("_!SID!_", site_id, body, fixed = TRUE)
+    
+    res <- httr::POST(url, body = body, httr::content_type_xml(),
+                      httr::accept_json())
+    json <- jsonlite::fromJSON(httr::content(res, "text"))
+    cols <- unlist(json$sites$columns)
+    rows <- as.data.frame(json$sites$rows)
+    
+    data <- data_frame(c("timestamp", cols), length(rows$dateTime))
+    
+    # Timestamps from SolarGIS are in milliseconds.
+    data$timestamp <- as.POSIXct(rows$dateTime / 1000, "UTC", 
+                                 origin = "1970-01-01")
+    
+    for (i in 1:length(cols)) {
+        col_name <- cols[i]
+        data[, col_name] <- sapply(rows$values, function(val_list) {
+            return(unlist(val_list)[i])
+        })
+    }
+    
+    return(data)
+}
