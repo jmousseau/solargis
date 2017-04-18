@@ -16,13 +16,16 @@
 #' @author author The author of the request. May be an individual's name or the
 #' project name requesting data.
 #'
+#' @param api_key A SolarGIS API key.
+#'
 #' @param min_dist The minimum distance in meters from (lat, lon) that is
 #' acceptable for use. Defaults to 1000 meters which is about 0.62 miles.
 #'
 #' @return A complete file path for the SolarGIS data requested.
 #'
 #' @export
-request <- function(solargis_dir, lat, lon, start_date, end_date, author, min_dist = 1000) {
+request <- function(solargis_dir, lat, lon, start_date, end_date, author, 
+                    api_key, min_dist = 1000) {
     if (!dir.exists(solargis_dir)) {
         stop(paste("The solargis directory", solargis_dir, "does not exist."))
     }
@@ -51,7 +54,6 @@ request <- function(solargis_dir, lat, lon, start_date, end_date, author, min_di
     # `min_dist` of the current requested location.
     if (file.exists(meta_file)) {
         meta <- data.table::fread(meta_file)
-        meta <- meta[which(meta$year == year), ]
 
         # Convert the two arrays of latitude and longitude to coordinate pairs.
         coords <- mapply(c, meta$lat, meta$lon, SIMPLIFY = FALSE)
@@ -63,20 +65,55 @@ request <- function(solargis_dir, lat, lon, start_date, end_date, author, min_di
         # If dist_to_prev_requests is empty, this will cause the comparison
         # below to fail and thus request data from SolarGIS.
         dist_to_prev_requests <- c(dist_to_prev_requests, min_dist)
-
+        
         if (min(dist_to_prev_requests) < min_dist) {
             message(paste("Found existing location within", min_dist, "meters."))
             
-            # TODO: Check the range of dates here. If they are contained, return
+            closest <- meta[which.min(dist_to_prev_requests), ]
+            
+            # Check the range of dates here. If they are contained, return
             # path to file, otherwise update date range for meta and change
             # lat/lon to be lat/lon in meta table. Update date range in meta
             # table. Then create and submit new request(s).
+            message("Checking date ranges...")
+            date_diffs <- subtract_date_ranges(start_date, end_date, 
+                                               closest$start_date, 
+                                               closest$end_date)
             
-            closest <- meta[which.min(dist_to_prev_requests), ]
-            file <- paste0(meta$file_hash, ".csv")
-            path <- paste(solargis_dir, "data", meta$year, file, sep = "/")
-
-            return(path)
+            site_data_file <- paste0(meta$file_hash, ".csv")
+            site_data_path <- paste(solargis_dir, "data", site_data_file, 
+                                    sep = "/")
+            
+            if (length(date_diffs) > 0) {
+                n_days <-length(unlist(date_diffs))
+                message(paste("Requesting", n_days, "more day(s) of data."))
+                
+                # Lat / lon are changed to those found in meta data table so
+                # that data is true to location.
+                lat <- closest$lat
+                lon <- closest$lon
+                
+                meta$start_date[which.min(dist_to_prev_requests)] <- start_date
+                meta$end_date[which.min(dist_to_prev_requests)] <- end_date
+                
+                write.csv(meta, file = meta_file, sep = ",", dec = ".",
+                          row.names = FALSE)
+                
+                # Submit a request for each date range difference.
+                for (date_range in date_diffs) {
+                    req_start_date <- date_range[i]
+                    req_end_date <- date_range[length(date_range)]
+                    res <- request_remote(lat, lon, req_start_date, 
+                                          req_end_date, api_key)
+                    write.csv(res, file = site_data_path, sep = ",", dec = ".",
+                              append = TRUE, row.names = FALSE)
+                }
+                
+                return(site_data_path)
+                
+            } else {
+                return(site_data_path)
+            }
         }
     }
 
@@ -98,10 +135,14 @@ request <- function(solargis_dir, lat, lon, start_date, end_date, author, min_di
         ), file = meta_file, sep = ",", dec = ".", append = TRUE,
         row.names = FALSE, col.names = !file.exists(meta_file))
     )
+    
+    site_data_file <- paste0(digest::sha1(paste0(lat, lon, start_date, end_date)), ".csv")
+    site_data_path <- paste(solargis_dir, "data", site_data_file, sep = "/")
 
-    # TODO: Request data, write file & return path.
+    res <- request_remote(lat, lon, start_date, end_date, api_key)
+    write.csv(res, file = site_data_path, sep = ",", dec = ".", row.names = FALSE)
 
-    return(NULL)
+    return(site_data_path)
 }
 
 
@@ -119,7 +160,7 @@ request <- function(solargis_dir, lat, lon, start_date, end_date, author, min_di
 #' 
 #' @param end_date The end date for the data to be reqeusted.
 #'
-#' @param api_key The API key for solar gis.
+#' @param api_key A SolarGIS API key.
 #' 
 #' @return A complete file path for the SolarGIS data requested.
 request_remote <- function(lat, lon, start_date, end_date, api_key) {
