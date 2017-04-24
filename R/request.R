@@ -97,16 +97,19 @@ request <- function(solargis_dir, lat, lon, start_date, end_date, author,
                 meta$end_date[which.min(dist_to_prev_requests)] <- end_date
                 
                 write.table(meta, file = meta_file, sep = ",", dec = ".",
-                            row.names = FALSE)
+                            row.names = FALSE,
+                            col.names = !file.exists(meta_file) |
+                                        length(meta$file_hash) == 1)
                 
                 # Submit a request for each date range difference.
                 for (date_range in date_diffs) {
-                    req_start_date <- date_range[i]
+                    req_start_date <- date_range[1]
                     req_end_date <- date_range[length(date_range)]
                     res <- request_remote(lat, lon, req_start_date, 
                                           req_end_date, api_key)
-                    write.table(res, file = site_data_path, sep = ",", dec = ".",
-                                append = TRUE, row.names = FALSE)
+                    write.table(res, file = site_data_path, sep = ",",
+                                dec = ".", append = TRUE, row.names = FALSE,
+                                col.names = !file.exists(site_data_path))
                 }
                 
                 return(site_data_path)
