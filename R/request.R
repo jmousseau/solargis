@@ -186,7 +186,8 @@ request_remote <- function(lat, lon, start_date, end_date, api_key) {
                 xmlns='http://geomodel.eu/schema/data/request'
                 xmlns:ws='http://geomodel.eu/schema/ws/data'>
                 <site id='_!SID!_' lat='_!LAT!_' lng='_!LON!_'/>
-                <processing key='GHI DIF DNI' summarization='MIN_15'/>
+                <processing key='GHI DIF GTI DNI TEMP RH AP WS WD SE SA' 
+                 summarization='MIN_15'/>
             </ws:dataDeliveryRequest>"
     
     body <- gsub("_!DFR!_", start_date, body, fixed = TRUE)
