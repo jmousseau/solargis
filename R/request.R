@@ -136,11 +136,14 @@ request <- function(solargis_dir, lat, lon, start_date, end_date, author,
         row.names = FALSE, col.names = !file.exists(meta_file))
     )
     
+    solargis_data_dir <- paste0(solargis_dir, "/data")
+    dir.create(solargis_data_dir, showWarnings = FALSE)
+    
     site_data_file <- paste0(digest::sha1(paste0(lat, lon, start_date, end_date)), ".csv")
-    site_data_path <- paste(solargis_dir, "data", site_data_file, sep = "/")
+    site_data_path <- paste(solargis_data_dir, site_data_file, sep = "/")
 
     res <- request_remote(lat, lon, start_date, end_date, api_key)
-    write.csv(res, file = site_data_path, sep = ",", dec = ".", row.names = FALSE)
+    write.csv(res, file = site_data_path, row.names = FALSE)
 
     return(site_data_path)
 }
