@@ -4,6 +4,9 @@
 #' sights for multiple years.
 #'
 #' @param solargis_dir The root directory where solar-gis data is stored.
+#' 
+#' @param site_id A site identifier. Does not be unique. Unique identifier is
+#' created with \code{site_id} and \code{location_hash} in the meta data table.
 #'
 #' @param lat The location's latitude.
 #'
@@ -24,7 +27,7 @@
 #' @return A complete file path for the SolarGIS data requested.
 #'
 #' @export
-request <- function(solargis_dir, lat, lon, start_date, end_date, author, 
+request <- function(solargis_dir, site_id, lat, lon, start_date, end_date, author, 
                     api_key, min_dist = 1000) {
     if (!dir.exists(solargis_dir)) {
         stop(paste("The solargis directory", solargis_dir, "does not exist."))
@@ -53,6 +56,7 @@ request <- function(solargis_dir, lat, lon, start_date, end_date, author,
     # created.
     suppressWarnings(
         write.table(data.frame(
+            site_id = site_id,
             lat = lat,
             lon = lon,
             start_date = start_date,
@@ -64,6 +68,12 @@ request <- function(solargis_dir, lat, lon, start_date, end_date, author,
     )
     
     location_hash <- digest::sha1(paste0(lat, lon))
+    
+    solargis_data_dir <- paste0(solargis_dir, "/data")
+    dir.create(solargis_data_dir, showWarnings = FALSE)
+    
+    site_data_file <- paste0(location_hash, ".csv")
+    site_data_path <- paste(solargis_data_dir, site_data_file, sep = "/")
 
     # Find the closest existing request and see if the location is within the
     # `min_dist` of the current requested location.
@@ -94,10 +104,6 @@ request <- function(solargis_dir, lat, lon, start_date, end_date, author,
             date_diffs <- subtract_date_ranges(start_date, end_date, 
                                                closest$start_date, 
                                                closest$end_date)
-            
-            site_data_file <- paste0(meta$location_hash, ".csv")
-            site_data_path <- paste(solargis_dir, "data", site_data_file, 
-                                    sep = "/")
             
             if (length(date_diffs) > 0) {
                 n_days <-length(unlist(date_diffs))
@@ -160,6 +166,7 @@ request <- function(solargis_dir, lat, lon, start_date, end_date, author,
     # Warnings are suppressed for a non-existing "meta.csv".
     suppressWarnings(
         write.table(data.frame(
+            site_id = site_id,
             lat = lat,
             lon = lon,
             start_date = start_date,
@@ -169,12 +176,6 @@ request <- function(solargis_dir, lat, lon, start_date, end_date, author,
         ), file = meta_file, sep = ",", dec = ".", append = TRUE,
         row.names = FALSE, col.names = !file.exists(meta_file))
     )
-    
-    solargis_data_dir <- paste0(solargis_dir, "/data")
-    dir.create(solargis_data_dir, showWarnings = FALSE)
-    
-    site_data_file <- paste0(location_hash, ".csv")
-    site_data_path <- paste(solargis_data_dir, site_data_file, sep = "/")
 
     res <- request_remote(lat, lon, start_date, end_date, api_key)
     write.csv(res, file = site_data_path, row.names = FALSE)
