@@ -29,6 +29,10 @@ request <- function(solargis_dir, lat, lon, start_date, end_date, author,
     if (!dir.exists(solargis_dir)) {
         stop(paste("The solargis directory", solargis_dir, "does not exist."))
     }
+    
+    if (start_date > end_date) {
+        stop(paste("Start date occurs after end date."))
+    }
 
     # TODO: Check the latitude value to see if it is bounded correctly.
 
