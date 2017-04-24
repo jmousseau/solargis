@@ -108,8 +108,11 @@ request <- function(solargis_dir, lat, lon, start_date, end_date, author,
                 lat <- closest$lat
                 lon <- closest$lon
                 
-                meta$start_date[which.min(dist_to_prev_requests)] <- start_date
-                meta$end_date[which.min(dist_to_prev_requests)] <- end_date
+                index_of_closest <- which.min(dist_to_prev_requests)
+                
+                # Only give real dates once data has been successfully fetched.
+                meta$start_date[index_of_closest] <- NA
+                meta$end_date[index_of_closest] <- NA
                 
                 write.table(meta, file = meta_file, sep = ",", dec = ".",
                             row.names = FALSE,
@@ -120,8 +123,21 @@ request <- function(solargis_dir, lat, lon, start_date, end_date, author,
                 for (date_range in date_diffs) {
                     req_start_date <- date_range[1]
                     req_end_date <- date_range[length(date_range)]
+                    
+                    # Will throw fatal error if request fails.
                     res <- request_remote(lat, lon, req_start_date, 
                                           req_end_date, api_key)
+                    
+                    # Because more than one request can be sent, set the end
+                    # date to the most recent successful request end date.
+                    meta$start_date[index_of_closest] <- start_date
+                    meta$end_date[index_of_closest] <- req_end_date
+                    
+                    write.table(meta, file = meta_file, sep = ",", dec = ".",
+                                row.names = FALSE,
+                                col.names = !file.exists(meta_file) |
+                                            length(meta$location_hash) == 1)
+                    
                     write.table(res, file = site_data_path, sep = ",",
                                 dec = ".", append = TRUE, row.names = FALSE,
                                 col.names = !file.exists(site_data_path))
@@ -207,6 +223,12 @@ request_remote <- function(lat, lon, start_date, end_date, api_key) {
     res <- httr::POST(url, body = body, httr::content_type_xml(),
                       httr::accept_json())
     json <- jsonlite::fromJSON(httr::content(res, "text"))
+    
+    # If the message field is present, an error has occurred.
+    if (!is.null(json$message)) {
+        stop(paste0("SolarGIS Error: ", json$message))
+    }
+    
     cols <- unlist(json$sites$columns)
     rows <- as.data.frame(json$sites$rows)
     
