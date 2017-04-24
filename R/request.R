@@ -41,7 +41,7 @@ request <- function(solargis_dir, lat, lon, start_date, end_date, author,
                     ", is outside USA and Canada."))
     }
 
-    if (usage_units_remaining(api_key) == 0) {
+    if (usage_units_remaining(api_key) %in% c(0, NA)) {
         stop(paste("Account has no remaining data units available."))
     }
 
