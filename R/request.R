@@ -180,9 +180,8 @@ request <- function(solargis_dir, lat, lon, start_date, end_date, author,
 #' 
 #' @return A complete file path for the SolarGIS data requested.
 request_remote <- function(lat, lon, start_date, end_date, api_key) {
-    base_url <- "https://solargis.info/ws/rest/datadelivery"
-    url <- paste0(base_url, "/request?key=", api_key)
-    
+    url <- rest_datadelivery_url("request", api_key)
+
     site_hash <- digest::sha1(paste0(lat, lon, start_date, end_date))
     site_id <- paste0("site-", site_hash)
 

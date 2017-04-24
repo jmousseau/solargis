@@ -2,3 +2,7 @@
 
 export(read_csv)
 export(request)
+export(usage_calls)
+export(usage_calls_remaining)
+export(usage_units)
+export(usage_units_remaining)
