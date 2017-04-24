@@ -49,6 +49,8 @@ request <- function(solargis_dir, lat, lon, start_date, end_date, author,
         ), file = requests_file, sep = ",", dec = ".", append = TRUE,
         row.names = FALSE, col.names = !file.exists(requests_file))
     )
+    
+    location_hash <- digest::sha1(paste0(lat, lon))
 
     # Find the closest existing request and see if the location is within the
     # `min_dist` of the current requested location.
@@ -80,7 +82,7 @@ request <- function(solargis_dir, lat, lon, start_date, end_date, author,
                                                closest$start_date, 
                                                closest$end_date)
             
-            site_data_file <- paste0(meta$file_hash, ".csv")
+            site_data_file <- paste0(meta$location_hash, ".csv")
             site_data_path <- paste(solargis_dir, "data", site_data_file, 
                                     sep = "/")
             
@@ -99,7 +101,7 @@ request <- function(solargis_dir, lat, lon, start_date, end_date, author,
                 write.table(meta, file = meta_file, sep = ",", dec = ".",
                             row.names = FALSE,
                             col.names = !file.exists(meta_file) |
-                                        length(meta$file_hash) == 1)
+                                        length(meta$location_hash) == 1)
                 
                 # Submit a request for each date range difference.
                 for (date_range in date_diffs) {
@@ -134,7 +136,7 @@ request <- function(solargis_dir, lat, lon, start_date, end_date, author,
             start_date = start_date,
             end_date = end_date,
             author = author,
-            file_hash = digest::sha1(paste0(lat, lon, start_date, end_date))
+            location_hash = location_hash
         ), file = meta_file, sep = ",", dec = ".", append = TRUE,
         row.names = FALSE, col.names = !file.exists(meta_file))
     )
@@ -142,7 +144,7 @@ request <- function(solargis_dir, lat, lon, start_date, end_date, author,
     solargis_data_dir <- paste0(solargis_dir, "/data")
     dir.create(solargis_data_dir, showWarnings = FALSE)
     
-    site_data_file <- paste0(digest::sha1(paste0(lat, lon, start_date, end_date)), ".csv")
+    site_data_file <- paste0(location_hash, ".csv")
     site_data_path <- paste(solargis_data_dir, site_data_file, sep = "/")
 
     res <- request_remote(lat, lon, start_date, end_date, api_key)
