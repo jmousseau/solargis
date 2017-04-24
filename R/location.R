@@ -31,3 +31,24 @@ distance_between <- function(lat1, lon1, lat2, lon2) {
 
     return(dist_in_m)
 }
+
+
+#' Get the ISO3 country code for a coordinate.
+#'
+#' @param lat Latitude of coordinate.
+#'
+#' @param lon Longitude of coordinate.
+#' 
+#' @return ISO3 country code.
+coord_to_country <- function(lat, lon) {
+    points <- data.frame(lon = c(lon), lat = c(lat))
+    
+    countries_sp <- rworldmap::getMap(resolution = "low")
+    proj_4_string <- sp::CRS(sp::proj4string(countries_sp))
+    
+    points_sp <- sp::SpatialPoints(points, proj4string = proj_4_string)
+    
+    indices <- sp::over(points_sp, countries_sp)
+    
+    return(as.character(indices$ISO3))
+}

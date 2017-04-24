@@ -33,6 +33,10 @@ request <- function(solargis_dir, lat, lon, start_date, end_date, author,
     if (start_date > end_date) {
         stop(paste("Start date occurs after end date."))
     }
+    
+    if (!coord_to_country(lat, lon) %in% c("USA", "CAN")) {
+        stop(paste("The requested location is outside USA and CAN."))
+    }
 
     # TODO: Check the latitude value to see if it is bounded correctly.
 

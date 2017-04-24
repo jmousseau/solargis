@@ -5,9 +5,11 @@ Version: 0.0.0
 Authors@R: as.person("Jack Mousseau <mousseau@case.edu> [cre, aut]")
 Description: Request SolarGIS (https://solargis.info) data.
 Imports:
+    data.table,
+    digest,
     httr,
     jsonlite,
-    data.table,
-    digest
+    rworldmap,
+    sp
 License: CC BY-NC-SA 4.0
 RoxygenNote: 5.0.1
