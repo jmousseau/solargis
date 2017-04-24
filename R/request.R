@@ -34,11 +34,16 @@ request <- function(solargis_dir, lat, lon, start_date, end_date, author,
         stop(paste("Start date occurs after end date."))
     }
     
-    if (!coord_to_country(lat, lon) %in% c("USA", "CAN")) {
-        stop(paste("The requested location is outside USA and CAN."))
+    country_name <- coord_to_country(lat, lon)
+    
+    if (!country_name$ISO3 %in% c("USA", "CAN")) {
+        stop(paste0("The requested location, ", country_name$full, 
+                    ", is outside USA and Canada."))
     }
 
-    # TODO: Check the latitude value to see if it is bounded correctly.
+    if (usage_units_remaining(api_key) == 0) {
+        stop(paste("Account has no remaining data units available."))
+    }
 
     requests_file <- paste0(solargis_dir, "/requests.csv")
     meta_file <- paste0(solargis_dir, "/meta.csv")

@@ -39,7 +39,7 @@ distance_between <- function(lat1, lon1, lat2, lon2) {
 #'
 #' @param lon Longitude of coordinate.
 #' 
-#' @return ISO3 country code.
+#' @return A list containing \code{$ISO3} code and \code{$full} name.
 coord_to_country <- function(lat, lon) {
     points <- data.frame(lon = c(lon), lat = c(lat))
     
@@ -50,5 +50,8 @@ coord_to_country <- function(lat, lon) {
     
     indices <- sp::over(points_sp, countries_sp)
     
-    return(as.character(indices$ISO3))
+    return(list(
+        ISO3 = as.character(indices$ISO3),
+        full = as.character(indices$ADMIN)
+    ))
 }

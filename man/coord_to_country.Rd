@@ -12,7 +12,7 @@ coord_to_country(lat, lon)
 \item{lon}{Longitude of coordinate.}
 }
 \value{
-ISO3 country code.
+A list containing \code{$ISO3} code and \code{$full} name.
 }
 \description{
 Get the ISO3 country code for a coordinate.
