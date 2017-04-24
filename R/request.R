@@ -96,8 +96,8 @@ request <- function(solargis_dir, lat, lon, start_date, end_date, author,
                 meta$start_date[which.min(dist_to_prev_requests)] <- start_date
                 meta$end_date[which.min(dist_to_prev_requests)] <- end_date
                 
-                write.csv(meta, file = meta_file, sep = ",", dec = ".",
-                          row.names = FALSE)
+                write.table(meta, file = meta_file, sep = ",", dec = ".",
+                            row.names = FALSE)
                 
                 # Submit a request for each date range difference.
                 for (date_range in date_diffs) {
@@ -105,8 +105,8 @@ request <- function(solargis_dir, lat, lon, start_date, end_date, author,
                     req_end_date <- date_range[length(date_range)]
                     res <- request_remote(lat, lon, req_start_date, 
                                           req_end_date, api_key)
-                    write.csv(res, file = site_data_path, sep = ",", dec = ".",
-                              append = TRUE, row.names = FALSE)
+                    write.table(res, file = site_data_path, sep = ",", dec = ".",
+                                append = TRUE, row.names = FALSE)
                 }
                 
                 return(site_data_path)
@@ -125,7 +125,7 @@ request <- function(solargis_dir, lat, lon, start_date, end_date, author,
     # Add the request to "meta.csv" because we are requesting a new dataset.
     # Warnings are suppressed for a non-existing "meta.csv".
     suppressWarnings(
-        write.csv(data.frame(
+        write.table(data.frame(
             lat = lat,
             lon = lon,
             start_date = start_date,
