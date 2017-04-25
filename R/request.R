@@ -220,8 +220,7 @@ request_remote <- function(lat, lon, start_date, end_date, api_key) {
                 xmlns='http://geomodel.eu/schema/data/request'
                 xmlns:ws='http://geomodel.eu/schema/ws/data'>
                 <site id='_!SID!_' lat='_!LAT!_' lng='_!LON!_'/>
-                <processing key='GHI DIF GTI DNI TEMP RH AP WS WD SE SA' 
-                 summarization='MIN_15'/>
+                <processing key='_!KEY!_' summarization='MIN_15'/>
             </ws:dataDeliveryRequest>"
     
     body <- gsub("_!DFR!_", start_date, body, fixed = TRUE)
@@ -229,6 +228,10 @@ request_remote <- function(lat, lon, start_date, end_date, api_key) {
     body <- gsub("_!LAT!_", lat, body, fixed = TRUE)
     body <- gsub("_!LON!_", lon, body, fixed = TRUE)
     body <- gsub("_!SID!_", site_id, body, fixed = TRUE)
+    body <- gsub("_!KEY!_", paste(c(
+        "GHI", "DNI", "DIF", "GTI", "KTM", "SE", "SA", "TEMP", "AP", "RH", "WS",
+        "WD", "PWAT", "KT"
+    ), collapse = " "), body, fixed = TRUE)
     
     res <- httr::POST(url, body = body, httr::content_type_xml(),
                       httr::accept_json())
