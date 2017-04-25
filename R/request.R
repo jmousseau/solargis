@@ -27,14 +27,23 @@
 #' @return A complete file path for the SolarGIS data requested.
 #'
 #' @export
-request <- function(solargis_dir, site_id, lat, lon, start_date, end_date, author, 
-                    api_key, min_dist = 1000) {
+request <- function(solargis_dir, site_id, lat, lon, start_date, end_date,
+                    author, api_key, min_dist = 1000) {
     if (!dir.exists(solargis_dir)) {
         stop(paste("The solargis directory", solargis_dir, "does not exist."))
     }
     
     if (start_date > end_date) {
         stop(paste("Start date occurs after end date."))
+    }
+    
+    max_date_diff_in_days <- 3 * 365
+    date_diff <- as.Date(end_date) - as.Date(start_date)
+    units(date_diff) <- "days"
+    
+    if (as.numeric(date_diff) > max_date_diff_in_days) {
+        stop(paste0("Number of days requested, ", date_diff, 
+                    ", exceeds max per request (", max_date_diff_in_days, ")."))
     }
     
     country_name <- coord_to_country(lat, lon)
