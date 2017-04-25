@@ -45,7 +45,7 @@ usage_units <- function(api_key, start_date, end_date) {
         paste0(url, "&from=", start_date, "&to=", end_date)   
     }
     
-    return(httr::content(httr::GET(url), "text"))
+    return(as.numeric(httr::content(httr::GET(url), "text")))
 }
 
 
