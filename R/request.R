@@ -115,6 +115,7 @@ request <- function(solargis_dir, site_id, lat, lon, start_date, end_date, autho
                 lon <- closest$lon
                 
                 index_of_closest <- which.min(dist_to_prev_requests)
+                previous_start_date <- meta$start_date[index_of_closest]
                 
                 # Only give real dates once data has been successfully fetched.
                 meta$start_date[index_of_closest] <- NA
@@ -137,7 +138,11 @@ request <- function(solargis_dir, site_id, lat, lon, start_date, end_date, autho
                     # Because more than one request can be sent, set the end
                     # date to the most recent successful request end date.
                     meta$start_date[index_of_closest] <- start_date
-                    meta$end_date[index_of_closest] <- req_end_date
+                    meta$end_date[index_of_closest] <- ifelse(
+                        as.character(req_end_date) < previous_start_date,
+                        end_date,
+                        as.character(req_end_date)
+                    )
                     
                     write.table(meta, file = meta_file, sep = ",", dec = ".",
                                 row.names = FALSE,
@@ -147,6 +152,10 @@ request <- function(solargis_dir, site_id, lat, lon, start_date, end_date, autho
                     write.table(res, file = site_data_path, sep = ",",
                                 dec = ".", append = TRUE, row.names = FALSE,
                                 col.names = !file.exists(site_data_path))
+                    
+                    # TODO: PUT intro CRADLE. On confirmation of ingestion,
+                    # remove `site_data_path` file.
+                    
                 }
                 
                 return(site_data_path)
