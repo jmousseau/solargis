@@ -5,11 +5,20 @@
 #' @param meta Meta data frame.
 #'
 #' @param meta_file Meta CSV file.
-write_meta <- function(meta, meta_file) {
+#' 
+#' @param should_append Should the entry be appended to existing file.
+write_meta <- function(meta, meta_file, should_append = TRUE) {
+    if (file.exists(meta_file)) {
+        existing_entries <- length(read.csv(meta_file)$location_hash)
+    } else {
+        existing_entries <- 0
+    }
+    
     suppressWarnings(
-        write.table(meta, file = meta_file, sep = ",", dec = ".", 
+        write.table(meta, file = meta_file, sep = ",", dec = ".",
+                    append = should_append, 
                     row.names = FALSE, col.names = !file.exists(meta_file) |
-                        length(meta$location_hash) == 1)
+                        (existing_entries == 1 & !should_append))
     )
 }
 

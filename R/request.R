@@ -162,7 +162,7 @@ request <- function(solargis_dir, site_id, lat, lon, start_date, end_date,
                             as.character(req_end_date)
                         )
                         
-                        write_meta(meta, meta_file)
+                        write_meta(meta, meta_file, FALSE)
                         write_site_data(res, site_data_path)
                         
                         # TODO: PUT intro CRADLE. On confirmation of ingestion,

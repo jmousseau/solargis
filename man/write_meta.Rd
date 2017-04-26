@@ -4,12 +4,14 @@
 \alias{write_meta}
 \title{Write meta data.}
 \usage{
-write_meta(meta, meta_file)
+write_meta(meta, meta_file, should_append = TRUE)
 }
 \arguments{
 \item{meta}{Meta data frame.}
 
 \item{meta_file}{Meta CSV file.}
+
+\item{should_append}{Should the entry be appended to existing file.}
 }
 \description{
 Writes meta data frame to meta file.
