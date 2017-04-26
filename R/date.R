@@ -73,3 +73,31 @@ subtract_date_ranges <- function(start_date, end_date, lower_date, upper_date) {
     
     return(date_ranges)
 }
+
+
+#' Generate date block indices.
+#'
+#' Due to SolgarGIS restricting the size of any one request to 31 days, we must
+#' create a collection of indices such that a proper fetch range is created
+#' from \code{result[i] + 1} to \code{result[i]}.
+#'
+#' @param total_number_of_days How many days are going to be requested.
+#' 
+#' @param days_per_request The number of days per request. Defaults to max of
+#' 31.
+#'
+#' @return A collection of indices where \code{result[i] + 1} represents the
+#' start date index and \code{result[i]} represents the end date index.
+generate_date_block_indices <- function(total_number_of_days, 
+                                        days_per_request = 31) {
+    # Max number of days that can be fetched at once is 31. Thus
+    # data must be fetched in 31 day blocks.
+    expected_block_count <- ceiling(total_number_of_days / days_per_request)
+    date_block_indices <- seq(0, total_number_of_days, by = days_per_request)
+    
+    if (length(date_block_indices) - 1 < expected_block_count) {
+        date_block_indices <- c(date_block_indices, total_number_of_days)
+    }
+    
+    return(date_block_indices)
+}
