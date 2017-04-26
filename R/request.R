@@ -37,6 +37,10 @@ request <- function(solargis_dir, site_id, lat, lon, start_date, end_date,
         stop(paste("Start date occurs after end date."))
     }
     
+    if (!is.numeric(lat) || !is.numeric(lon)) {
+        stop("Latitude and longitude must be of numeric type.")
+    }
+    
     max_date_diff_in_days <- 3 * 365
     date_diff <- as.Date(end_date) - as.Date(start_date)
     units(date_diff) <- "days"
