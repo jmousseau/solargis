@@ -137,37 +137,43 @@ request <- function(solargis_dir, site_id, lat, lon, start_date, end_date,
                 
                 # Submit a request for each date range difference.
                 for (date_range in date_diffs) {
-                    req_start_date <- date_range[1]
-                    req_end_date <- date_range[length(date_range)]
-                    
-                    # Will throw fatal error if request fails.
-                    res <- request_remote(lat, lon, req_start_date, 
-                                          req_end_date, api_key)
-                    
-                    res$lat <- lat
-                    res$lon <- lon
-                    
-                    # Because more than one request can be sent, set the end
-                    # date to the most recent successful request end date.
-                    meta$start_date[index_of_closest] <- start_date
-                    meta$end_date[index_of_closest] <- ifelse(
-                        as.character(req_end_date) < previous_start_date,
-                        end_date,
-                        as.character(req_end_date)
+                    date_block_indices <- generate_date_block_indices(
+                        length(date_range)
                     )
                     
-                    write.table(meta, file = meta_file, sep = ",", dec = ".",
-                                row.names = FALSE,
-                                col.names = !file.exists(meta_file) |
-                                            length(meta$location_hash) == 1)
-                    
-                    write.table(res, file = site_data_path, sep = ",",
-                                dec = ".", append = TRUE, row.names = FALSE,
-                                col.names = !file.exists(site_data_path))
-                    
-                    # TODO: PUT intro CRADLE. On confirmation of ingestion,
-                    # remove `site_data_path` file.
-                    
+                    for (i in 2:length(date_block_indices)) {
+                        start_date_index <- date_block_indices[i - 1] + 1
+                        end_date_index <- date_block_indices[i]
+                        
+                        req_start_date <- date_range[start_date_index]
+                        req_end_date <- date_range[end_date_index]
+                        
+                        # Will throw fatal error if request fails.
+                        res <- request_remote(lat, lon, req_start_date, 
+                                              req_end_date, api_key)
+                        
+                        # Because more than one request can be sent, set the end
+                        # date to the most recent successful request end date.
+                        meta$start_date[index_of_closest] <- start_date
+                        meta$end_date[index_of_closest] <- ifelse(
+                            as.character(req_end_date) < previous_start_date,
+                            end_date,
+                            as.character(req_end_date)
+                        )
+                        
+                        write.table(meta, file = meta_file, sep = ",", 
+                                    dec = ".", row.names = FALSE,
+                                    col.names = !file.exists(meta_file) |
+                                        length(meta$location_hash) == 1)
+                        
+                        write.table(res, file = site_data_path, sep = ",",
+                                    dec = ".", append = TRUE, row.names = FALSE,
+                                    col.names = !file.exists(site_data_path))
+                        
+                        # TODO: PUT intro CRADLE. On confirmation of ingestion,
+                        # remove `site_data_path` file.
+                        
+                    }
                 }
                 
                 return(site_data_path)
@@ -197,9 +203,27 @@ request <- function(solargis_dir, site_id, lat, lon, start_date, end_date,
         ), file = meta_file, sep = ",", dec = ".", append = TRUE,
         row.names = FALSE, col.names = !file.exists(meta_file))
     )
+    
+    date_range <- as.Date(as.Date(start_date):as.Date(end_date),
+                          origin = "1970-01-01")
+    
+    date_block_indices <- generate_date_block_indices(
+        length(date_range)
+    )
+    
+    for (i in 2:length(date_block_indices)) {
+        start_date_index <- date_block_indices[i - 1] + 1
+        end_date_index <- date_block_indices[i]
+        
+        start_date <- date_range[start_date_index]
+        end_date <- date_range[end_date_index]
 
-    res <- request_remote(lat, lon, start_date, end_date, api_key)
-    write.csv(res, file = site_data_path, row.names = FALSE)
+        res <- request_remote(lat, lon, start_date, end_date, api_key)
+        
+        write.table(res, file = site_data_path, sep = ",",
+                    dec = ".", append = TRUE, row.names = FALSE,
+                    col.names = !file.exists(site_data_path))
+    }
 
     return(site_data_path)
 }
@@ -269,6 +293,9 @@ request_remote <- function(lat, lon, start_date, end_date, api_key) {
             return(unlist(val_list)[i])
         })
     }
+    
+    data$lat <- lat
+    data$lon <- lon
     
     return(data)
 }
