@@ -8,7 +8,7 @@
 write_meta <- function(meta, meta_file) {
     suppressWarnings(
         write.table(meta, file = meta_file, sep = ",", dec = ".", 
-                    row.names = FALSE, col.dnames = !file.exists(meta_file) |
+                    row.names = FALSE, col.names = !file.exists(meta_file) |
                         length(meta$location_hash) == 1)
     )
 }
@@ -22,7 +22,7 @@ write_meta <- function(meta, meta_file) {
 #'
 #' @param site_data_file Site data file.
 write_site_data <- function(data, site_data_file) {
-    desuppressWarnings(
+    suppressWarnings(
         write.table(data, file = site_data_file, sep = ",", dec = ".",
                     append = TRUE, row.names = FALSE,
                     col.names = !file.exists(site_data_file))
