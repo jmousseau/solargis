@@ -4,11 +4,14 @@
 \alias{request}
 \title{Request SolarGIS data.}
 \usage{
-request(solargis_dir, lat, lon, start_date, end_date, author, api_key,
+request(solargis_dir, site_id, lat, lon, start_date, end_date, author, api_key,
   min_dist = 1000)
 }
 \arguments{
 \item{solargis_dir}{The root directory where solar-gis data is stored.}
+
+\item{site_id}{A site identifier. Does not be unique. Unique identifier is
+created with \code{site_id} and \code{location_hash} in the meta data table.}
 
 \item{lat}{The location's latitude.}
 
