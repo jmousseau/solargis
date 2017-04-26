@@ -144,6 +144,9 @@ request <- function(solargis_dir, site_id, lat, lon, start_date, end_date,
                     res <- request_remote(lat, lon, req_start_date, 
                                           req_end_date, api_key)
                     
+                    res$lat <- lat
+                    res$lon <- lon
+                    
                     # Because more than one request can be sent, set the end
                     # date to the most recent successful request end date.
                     meta$start_date[index_of_closest] <- start_date
