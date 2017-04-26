@@ -134,10 +134,7 @@ request <- function(solargis_dir, site_id, lat, lon, start_date, end_date,
                 meta$start_date[index_of_closest] <- NA
                 meta$end_date[index_of_closest] <- NA
                 
-                write.table(meta, file = meta_file, sep = ",", dec = ".",
-                            row.names = FALSE,
-                            col.names = !file.exists(meta_file) |
-                                        length(meta$location_hash) == 1)
+                write_meta(meta, meta_file)
                 
                 # Submit a request for each date range difference.
                 for (date_range in date_diffs) {
@@ -165,14 +162,8 @@ request <- function(solargis_dir, site_id, lat, lon, start_date, end_date,
                             as.character(req_end_date)
                         )
                         
-                        write.table(meta, file = meta_file, sep = ",", 
-                                    dec = ".", row.names = FALSE,
-                                    col.names = !file.exists(meta_file) |
-                                        length(meta$location_hash) == 1)
-                        
-                        write.table(res, file = site_data_path, sep = ",",
-                                    dec = ".", append = TRUE, row.names = FALSE,
-                                    col.names = !file.exists(site_data_path))
+                        write_meta(meta, meta_file)
+                        write_site_data(res, site_data_path)
                         
                         # TODO: PUT intro CRADLE. On confirmation of ingestion,
                         # remove `site_data_path` file.
@@ -194,19 +185,15 @@ request <- function(solargis_dir, site_id, lat, lon, start_date, end_date,
     message("Fetching new data set from SolarGIS...")
 
     # Add the request to "meta.csv" because we are requesting a new dataset.
-    # Warnings are suppressed for a non-existing "meta.csv".
-    suppressWarnings(
-        write.table(data.frame(
-            site_id = site_id,
-            lat = lat,
-            lon = lon,
-            start_date = start_date,
-            end_date = end_date,
-            author = author,
-            location_hash = location_hash
-        ), file = meta_file, sep = ",", dec = ".", append = TRUE,
-        row.names = FALSE, col.names = !file.exists(meta_file))
-    )
+    write_meta(data.frame(
+        site_id = site_id,
+        lat = lat,
+        lon = lon,
+        start_date = start_date,
+        end_date = end_date,
+        author = author,
+        location_hash = location_hash
+    ), meta_file)
     
     date_range <- as.Date(as.Date(start_date):as.Date(end_date),
                           origin = "1970-01-01")
@@ -224,9 +211,7 @@ request <- function(solargis_dir, site_id, lat, lon, start_date, end_date,
 
         res <- request_remote(lat, lon, start_date, end_date, api_key)
         
-        write.table(res, file = site_data_path, sep = ",",
-                    dec = ".", append = TRUE, row.names = FALSE,
-                    col.names = !file.exists(site_data_path))
+        write_site_data(res, site_data_path)
     }
 
     return(site_data_path)
