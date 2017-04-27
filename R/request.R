@@ -87,6 +87,7 @@ request <- function(solargis_dir, site_id, lat, lon, start_date, end_date,
     
     site_data_file <- paste0(location_hash, ".csv")
     site_data_path <- paste(solargis_data_dir, site_data_file, sep = "/")
+    expected_days_written <- days_between_inclusive(start_date, end_date)
 
     # Find the closest existing request and see if the location is within the
     # `min_dist` of the current requested location.
@@ -171,6 +172,23 @@ request <- function(solargis_dir, site_id, lat, lon, start_date, end_date,
                     }
                 }
                 
+                # When updating the location, the meta data is the only place
+                # where total number of days is located.
+                expected_days_written <- days_between_inclusive(
+                    meta$start_date[index_of_closest],
+                    meta$end_date[index_of_closest]
+                ) 
+                written_site_date <- read_csv(site_data_path, sorted = FALSE)
+                days_written <- length(unique(as.Date(
+                    written_site_date$timestamp
+                ))) 
+                
+                if (days_written == expected_days_written) {
+                    message("Correct number of days contained in file.")
+                } else {
+                    message("Incorrect number of days contained in file.")
+                }
+                
                 return(site_data_path)
                 
             } else {
@@ -212,6 +230,15 @@ request <- function(solargis_dir, site_id, lat, lon, start_date, end_date,
         res <- request_remote(lat, lon, start_date, end_date, api_key)
         
         write_site_data(res, site_data_path)
+    }
+    
+    written_site_date <- read_csv(site_data_path, sorted = FALSE)
+    days_written <- length(unique(as.Date(written_site_date$timestamp))) 
+    
+    if (days_written == expected_days_written) {
+        message("Correct number of days contained in file.")
+    } else {
+        message("Incorrect number of days contained in file.")
     }
 
     return(site_data_path)

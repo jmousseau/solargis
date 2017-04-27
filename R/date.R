@@ -101,3 +101,16 @@ generate_date_block_indices <- function(total_number_of_days,
     
     return(date_block_indices)
 }
+
+#' Calculate the number of days between two days, inclusive.
+#' 
+#' @param start_date A start date string.
+#' 
+#' @param end_date An end date string.
+#' 
+#' @return The number of days between inclusive.
+days_between_inclusive <- function(start_date, end_date) {
+    date_diff <- as.Date(end_date) - as.Date(start_date)
+    units(date_diff) <- "days"
+    return(date_diff + 1)
+}
