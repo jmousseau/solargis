@@ -193,7 +193,7 @@ request <- function(solargis_dir, site_id, lat, lon, start_date, end_date,
         end_date = end_date,
         author = author,
         location_hash = location_hash
-    ), meta_file)
+    ), meta_file, file.exists(meta_file))
     
     date_range <- as.Date(as.Date(start_date):as.Date(end_date),
                           origin = "1970-01-01")
