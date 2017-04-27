@@ -55,3 +55,31 @@ coord_to_country <- function(lat, lon) {
         full = as.character(indices$ADMIN)
     ))
 }
+
+
+#' Get the fulll state for a coordinate.
+#'
+#' Return value will be NA if coordinate is located outside mainland United
+#' States. Thus Hawaii and Alaska coordinates will return NA.
+#'
+#' @param lat Latitude of coordinate.
+#'
+#' @param lon Longitude of coordinate.
+#' 
+#' @return Lowercase state name or \code{NA}.
+coordinate_to_state <- function(lat, lon) {
+    coordinates <- data.frame(lon = c(lon), lat = c(lat))
+
+    states <- maps::map("state", fill = TRUE, plot = FALSE)
+    ids <- sapply(strsplit(states$names, ":"), function(x) x[1])
+    proj4string <- sp::CRS("+proj=longlat +datum=WGS84")
+    states_sp <- maptools::map2SpatialPolygons(states, IDs = ids,
+                                               proj4string = proj4string)
+    
+    points_sp <- sp::SpatialPoints(coordinates, proj4string = proj4string)
+    indices <- sp::over(points_sp, states_sp)
+    
+    stateNames <- sapply(states_sp@polygons, function(x) x@ID)
+    
+    return(stateNames[indices])
+}
