@@ -4,7 +4,8 @@
 \alias{write_meta}
 \title{Write meta data.}
 \usage{
-write_meta(meta, meta_file, should_append = TRUE)
+write_meta(meta, meta_file, should_append = TRUE,
+  should_use_column_names = FALSE)
 }
 \arguments{
 \item{meta}{Meta data frame.}
@@ -12,6 +13,8 @@ write_meta(meta, meta_file, should_append = TRUE)
 \item{meta_file}{Meta CSV file.}
 
 \item{should_append}{Should the entry be appended to existing file.}
+
+\item{should_use_column_names}{Should column names be used.}
 }
 \description{
 Writes meta data frame to meta file.

@@ -135,7 +135,7 @@ request <- function(solargis_dir, site_id, lat, lon, start_date, end_date,
                 meta$start_date[index_of_closest] <- NA
                 meta$end_date[index_of_closest] <- NA
                 
-                write_meta(meta, meta_file)
+                write_meta(meta, meta_file, should_use_column_names = TRUE)
                 
                 # Submit a request for each date range difference.
                 for (date_range in date_diffs) {
@@ -163,7 +163,8 @@ request <- function(solargis_dir, site_id, lat, lon, start_date, end_date,
                             as.character(req_end_date)
                         )
                         
-                        write_meta(meta, meta_file, FALSE)
+                        write_meta(meta, meta_file, FALSE,
+                                   should_use_column_names = TRUE)
                         write_site_data(res, site_data_path)
                         
                         # TODO: PUT intro CRADLE. On confirmation of ingestion,

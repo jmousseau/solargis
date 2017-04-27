@@ -7,7 +7,10 @@
 #' @param meta_file Meta CSV file.
 #' 
 #' @param should_append Should the entry be appended to existing file.
-write_meta <- function(meta, meta_file, should_append = TRUE) {
+#' 
+#' @param should_use_column_names Should column names be used.
+write_meta <- function(meta, meta_file, should_append = TRUE,
+                       should_use_column_names = FALSE) {
     if (file.exists(meta_file)) {
         existing_entries <- length(read.csv(meta_file)$location_hash)
     } else {
@@ -18,7 +21,8 @@ write_meta <- function(meta, meta_file, should_append = TRUE) {
         write.table(meta, file = meta_file, sep = ",", dec = ".",
                     append = should_append, 
                     row.names = FALSE, col.names = !file.exists(meta_file) |
-                        (existing_entries == 1 & !should_append))
+                        (existing_entries == 1 & !should_append) |
+                        should_use_column_names)
     )
 }
 
