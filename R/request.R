@@ -156,13 +156,14 @@ request <- function(solargis_dir, site_id, lat, lon, start_date, end_date,
                         
                         # Because more than one request can be sent, set the end
                         # date to the most recent successful request end date.
-                        meta$start_date[index_of_closest] <- start_date
-                        meta$end_date[index_of_closest] <- ifelse(
-                            as.character(req_end_date) < previous_start_date,
-                            end_date,
-                            as.character(req_end_date)
+                        meta$start_date[index_of_closest] <- min(
+                            as.character(req_start_date),
+                            closest$start_date
                         )
-                        
+                        meta$end_date[index_of_closest] <- max(
+                            as.character(req_end_date),
+                            closest$end_date
+                        )
                         write_meta(meta, meta_file, FALSE,
                                    should_use_column_names = TRUE)
                         write_site_data(res, site_data_path)
