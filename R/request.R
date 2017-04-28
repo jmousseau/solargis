@@ -283,8 +283,7 @@ request_remote <- function(lat, lon, start_date, end_date, api_key) {
     body <- gsub("_!LON!_", lon, body, fixed = TRUE)
     body <- gsub("_!SID!_", site_id, body, fixed = TRUE)
     body <- gsub("_!KEY!_", paste(c(
-        "GHI", "DNI", "DIF", "GTI", "KTM", "SE", "SA", "TEMP", "AP", "RH", "WS",
-        "WD", "PWAT", "KT"
+        "GHI", "DIF", "GTI", "TEMP", "RH", "PWAT", "WS"
     ), collapse = " "), body, fixed = TRUE)
     
     res <- httr::POST(url, body = body, httr::content_type_xml(),
