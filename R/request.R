@@ -41,7 +41,7 @@ request <- function(solargis_dir, site_id, lat, lon, start_date, end_date,
         stop("Latitude and longitude must be of numeric type.")
     }
     
-    max_date_diff_in_days <- 3 * 365
+    max_date_diff_in_days <- 3 * 365 + 1
     date_diff <- as.Date(end_date) - as.Date(start_date)
     units(date_diff) <- "days"
     
@@ -53,7 +53,7 @@ request <- function(solargis_dir, site_id, lat, lon, start_date, end_date,
     country_name <- coord_to_country(lat, lon)
     
     if (!country_name$ISO3 %in% c("USA", "CAN")) {
-        stop(paste0("The requested location, ", country_name$full, 
+        stop(paste0("The requested location, ", country_name$full,
                     ", is outside USA and Canada."))
     }
     

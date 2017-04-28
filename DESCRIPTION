@@ -4,7 +4,7 @@ Title: Request SolarGIS data.
 Version: 0.0.0
 Authors@R: as.person("Jack Mousseau <mousseau@case.edu> [cre, aut]")
 Description: Request SolarGIS (https://solargis.info) data for United States and
-Canada.
+ Canada.
 Imports:
     data.table,
     digest,
