@@ -52,14 +52,7 @@ request <- function(solargis_dir, site_id, lat, lon, start_date, end_date,
     
     country_name <- coord_to_country(lat, lon)
     
-    if (!country_name$ISO3 %in% c("USA", "CAN")) {
-        stop(paste0("The requested location, ", country_name$full, 
-                    ", is outside USA and Canada."))
-    }
 
-    if (usage_units_remaining(api_key) %in% c(0, NA)) {
-        stop(paste("Account has no remaining data units available."))
-    }
 
     requests_file <- paste0(solargis_dir, "/requests.csv")
     meta_file <- paste0(solargis_dir, "/meta.csv")
@@ -129,13 +122,13 @@ request <- function(solargis_dir, site_id, lat, lon, start_date, end_date,
                 lon <- closest$lon
                 
                 index_of_closest <- which.min(dist_to_prev_requests)
-                previous_start_date <- meta$start_date[index_of_closest]
-                
+
                 # Only give real dates once data has been successfully fetched.
                 meta$start_date[index_of_closest] <- NA
                 meta$end_date[index_of_closest] <- NA
                 
-                write_meta(meta, meta_file, should_use_column_names = TRUE)
+                write_meta(meta, meta_file, FALSE,
+                           should_use_column_names = TRUE)
                 
                 # Submit a request for each date range difference.
                 for (date_range in date_diffs) {
@@ -156,14 +149,17 @@ request <- function(solargis_dir, site_id, lat, lon, start_date, end_date,
                         
                         # Because more than one request can be sent, set the end
                         # date to the most recent successful request end date.
-                        meta$start_date[index_of_closest] <- min(
+                        meta$start_date[index_of_closest] <- min(remove_nas(c(
                             as.character(req_start_date),
+                            meta$start_date[index_of_closest],
                             closest$start_date
-                        )
-                        meta$end_date[index_of_closest] <- max(
+                        )))
+                        meta$end_date[index_of_closest] <- max(remove_nas(c(
                             as.character(req_end_date),
+                            meta$end_date[index_of_closest],
                             closest$end_date
-                        )
+                        )))
+                        
                         write_meta(meta, meta_file, FALSE,
                                    should_use_column_names = TRUE)
                         write_site_data(res, site_data_path)

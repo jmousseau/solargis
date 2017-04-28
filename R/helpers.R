@@ -12,6 +12,17 @@ data_frame <- function(col_names, n_rows) {
     return(data)
 }
 
+
+#' Remove \code{NA}s from array.
+#'
+#' @param x Array to remove \code{NA}s from.
+#' 
+#' @return An array with \code{NA}s.
+remove_nas <- function(x) {
+    return(x[!is.na(x)])
+}
+
+
 #' Compose a SolarGIS REST Data Delivery URL.
 #'
 #' @param route The route name. Will be prefixed with
@@ -25,6 +36,7 @@ rest_datadelivery_url <- function(route, api_key) {
     url <- paste0(base_url, route, "?key=", api_key)
     return(url)
 }
+
 
 #' Compose a SolarGIS Usage Data Delivery URL.
 #'
