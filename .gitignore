@@ -1,25 +1,4 @@
-# Stain job directories
-hpc/job_*
-
-# Java debug output
-*.debug
-
-# Dynamic directories
-weather
-reports
-coverage_report
-edifes/inst/doc
-
-# Except for the report template
-!reports/report.Rmd
-
-# Generated ftp commands
-ftp.txt
-
-# Rcpp compiled files
-*.o
-*.so
-*.dll
+store/data
 
 # Created by https://www.gitignore.io/api/r
 
