@@ -1,5 +1,5 @@
 # solargis
-Request [SolarGIS](solargis.info) for the United States and Canada.
+Request [SolarGIS](https://solargis.info) for the United States and Canada.
 
 ## Overview
 Install `solargis` using the [`devtools`](https://github.com/hadley/devtools) 
